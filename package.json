@@ -17,6 +17,9 @@
     "mongoose": "^8.2.0",
     "mongose": "^0.0.2-security",
     "nodemon": "^3.1.0",
-    "prisma": "^5.10.2"
+    "prisma": "^5.10.2",
+    "swagger": "^0.7.5",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   }
 }
