@@ -28,6 +28,11 @@ class AuthService {
         return user;
     }
     async checkOTP(mobile, code) {
+        const user = await this.checkExistByMobile(mobile);
+        const now = new Date().getTime()
+        if (user?.otp?.expiresIn) throw new createHttpError.Unauthorized(AuthMessage.OtpCodeExpired)
+        if (user?.otp?.code != code) throw new createHttpError.Unauthorized(AuthMessage.OtpCodeIncorrect)
+        return user;
     }
     async checkExistByMobile(mobile) {
         const user = await this.#model.findOne({ mobile })
