@@ -32,6 +32,10 @@ class AuthService {
         const now = new Date().getTime()
         if (user?.otp?.expiresIn) throw new createHttpError.Unauthorized(AuthMessage.OtpCodeExpired)
         if (user?.otp?.code != code) throw new createHttpError.Unauthorized(AuthMessage.OtpCodeIncorrect)
+        if (!user.verifiedMobile == false) {
+            user.verifiedMobile = true;
+            await user.save();
+        }
         return user;
     }
     async checkExistByMobile(mobile) {
