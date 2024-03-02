@@ -3,10 +3,8 @@ const authService = require("./auth.service");
 const { AuthMessage } = require("./auth.messages");
 const NodeEnv = require("../../common/constant/env.enum");
 const CookieName = require("../../common/constant/cookie.enum");
-
 class AuthController {
     #service;
-
     constructor() {
         autoBind(this)
         this.#service = authService
@@ -20,9 +18,7 @@ class AuthController {
             console.log(error);
             next(error)
         }
-
     }
-
     async checkOTP(req, res, next) {
         try {
             const { mobile, code } = req.body;
@@ -39,13 +35,12 @@ class AuthController {
     async logout(req, res, next) {
         try {
             return res.clearCookie(CookieName.AccessToken).status(200).json({
-                message: "successfully logged out !"
+                message: AuthMessage.LogoutSuccessfully
             })
         } catch (error) {
             console.log(error);
             next(error)
         }
     }
-
 }
 module.exports = new AuthController
