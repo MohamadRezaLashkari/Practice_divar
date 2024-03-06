@@ -7,6 +7,7 @@ class UserController {
     constructor() {
         autoBind(this)
         this.#service = userService
+
     }
     async whoami(req, res, next) {
         try {
