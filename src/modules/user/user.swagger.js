@@ -23,7 +23,7 @@
  * @swagger
  *  /user/whoami:
  *      get:
- *          summary:  get user profile
+ *          summary: get user profile
  *          tags:
  *              -  User
  *          responses:

@@ -1,40 +1,51 @@
 const autoBind = require("auto-bind");
 const createHttpError = require("http-errors");
+const CategoryModel = require("./category.model");
+const { isValidObjectId, Types } = require("mongoose");
 const categoryMessages = require("./category.message");
-const prisma = require('./../../config/prisma.config')
+const slugify = require('slugify')
 class CategoryService {
     #model;
     constructor() {
         autoBind(this)
-        this.#model = prisma
+        this.#model = CategoryModel
     }
     async find() {
-        return await this.#model.category.findMany()
+        return await this.#model.find({ parent: { $exists: false } }) 
     }
     async create(categoryDto) {
-        if (categoryDto?.parent) {
+        if (categoryDto?.parent && isValidObjectId(categoryDto.parent)) {
             const existCategory = await this.checkExistById(categoryDto.parent)
-            categoryDto.parent = parseInt(existCategory[0].id)
-            categoryDto.parents = existCategory
+            categoryDto.parent = existCategory._id
+            categoryDto.parents = [
+                ... new Set(
+                    ([existCategory._id.toString()].concat(
+                        existCategory.parents.map(id => id.toString()))
+                    )).keys(id => new Types.ObjectId({ id }))
+            ]
         }
         if (categoryDto?.slug) {
+            categoryDto.slug = slugify(categoryDto.slug)
             await this.alreadyExistBySlug(categoryDto.slug)
+        } else {
+            categoryDto.slug = slugify(categoryDto.name)
         }
-        else {
-            categoryDto.slug = categoryDto.name
-        }
-        const { name, slug, parent, icon, parents } = categoryDto
-        const category = await this.#model.category.create({ data: { name, slug, parent, parents, icon } })
+        const category = await this.#model.create(categoryDto)
         return category
     }
     async checkExistById(id) {
-        const category = await this.#model.category.findMany({ where: { id: parseInt(id) } });
-        if (category.length === 0) throw new createHttpError.NotFound(categoryMessages.NotFound)
+        const category = await this.#model.findById(id)
+        if (!category) throw new createHttpError.NotFound(categoryMessages.NotFound)
+        return category
+    }
+    async checkExistBySlug(id) {
+        const category = await this.#model.findOne({ slug })
+        if (!category) throw new createHttpError.NotFound(categoryMessages.NotFound)
         return category
     }
     async alreadyExistBySlug(slug) {
-        const category = await this.#model.category.findMany({ where: { slug } });
-        if (category.length > 0) throw new createHttpError.Conflict(categoryMessages.ALearyExit)
+        const category = await this.#model.findOne({ slug })
+        if (category) throw new createHttpError.Conflict(categoryMessages.ALearyExit)
         return null
     }
 }
